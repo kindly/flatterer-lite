@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Flatterer</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@latest/css/materialdesignicons.min.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+    <link rel="mask-icon" href="favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+  </head>
+  <body>
+
+    <script src='/js/flatterer_lite.js'></script>
+
+    <script>
+      // Like with the `--target web` output the exports are immediately
+      // available but they won't work until we initialize the module. Unlike
+      // `--target web`, however, the globals are all stored on a
+      // `wasm_bindgen` global. The global itself is the initialization
+      // function and then the properties of the global are all the exported
+      // functions.
+      //
+      // Note that the name `wasm_bindgen` can be configured with the
+      // `--no-modules-global` CLI flag
+
+      async function run() {
+        await wasm_bindgen('/js/flatterer_lite_bg.wasm');
+        window.wasm_bindgen = wasm_bindgen;
+        wasm_bindgen.set_logger()
+        //const result = await wasm_bindgen.get_url("https://raw.githubusercontent.com/openreferral/specification/master/datapackage.json", {"moo": "doo"});
+        //console.log(result);
+      }
+
+      run();
+    </script>
+
+    <noscript>
+      <strong>We're sorry but Flatterer doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
