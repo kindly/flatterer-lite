@@ -1,6 +1,4 @@
-<img width="500" src="./docs/_static/flatterer-with-text.svg">
-
-# WASM frontend
+# Flatterer WASM frontend
 
 [Full Documentation](http://flatterer.opendata.coop/)
 

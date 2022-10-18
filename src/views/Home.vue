@@ -282,17 +282,26 @@
             >
           </v-col>
           <v-col>
-            <v-btn color="success" :href="generateDownload('fields.csv')" download
+            <v-btn
+              color="success"
+              :href="generateDownload('fields.csv')"
+              download
               >Download fields.csv</v-btn
             >
           </v-col>
           <v-col>
-            <v-btn color="success" :href="generateDownload('tables.csv')" download
+            <v-btn
+              color="success"
+              :href="generateDownload('tables.csv')"
+              download
               >Download tables.csv</v-btn
             >
           </v-col>
           <v-col>
-            <v-btn color="success" :href="generateDownload('datapackage.json')" download
+            <v-btn
+              color="success"
+              :href="generateDownload('datapackage.json')"
+              download
               >Download datapackage.json</v-btn
             >
           </v-col>
@@ -300,11 +309,10 @@
       </v-container>
     </v-card>
   </v-container>
-</template>Citation Style LanguaCitation Style Languagege
-
+</template>
 <script>
-function defaultData() {
-  return {
+function defaultData(from_url) {
+  let data = {
     panel: 0,
     fileUpload: null,
     url: "",
@@ -340,11 +348,67 @@ function defaultData() {
       { text: "Value in third row", value: "row 2" },
     ],
   };
+  if (from_url) {
+    let search = new URLSearchParams(new URL(window.location.href).search);
+    let url = search.get("url");
+    if (url) {
+      data["panel"] = 1;
+      data["url"] = url;
+    }
+
+    let string_params = [
+      "main_table_name",
+      "table_prefix",
+      "path_separator",
+      "array_key",
+      "json_schema",
+      "fields_only",
+      "tables_only",
+      "pushdown",
+    ];
+    for (const element of string_params) {
+      let value = search.get(element);
+      console.log(element);
+      if (value) {
+        data[element] = value;
+      }
+    }
+
+    let bool_params = ["inline_one_to_one", "fields_only", "tables_only"];
+
+    for (const element of bool_params) {
+      let value = search.get(element);
+      if (value) {
+        data[element] = true;
+      }
+    }
+    let stream = search.get("stream");
+    if (stream) {
+      data["arrayPosition"] = "stream";
+    }
+    let nested = search.get("array_key");
+    if (nested) {
+      data["arrayPosition"] = "nested";
+    }
+  }
+  return data;
 }
 
 export default {
   name: "Home",
-  data: defaultData,
+  data: () => defaultData(true),
+  mounted() {
+    let run = async () => {
+      await window.wasm_bindgen("/js/flatterer_lite_bg.wasm");
+      window.wasm_bindgen.set_logger();
+      //const result = await wasm_bindgen.get_url("https://raw.githubusercontent.com/openreferral/specification/master/datapackage.json", {"moo": "doo"});
+      //console.log(result);
+      if (this.url) {
+        this.preview();
+      }
+    };
+    run();
+  },
   watch: {
     apiError(newError) {
       this.$store.commit("setSection", {
@@ -484,7 +548,6 @@ export default {
           params.fields = evt.target.result;
           fields_finished = true;
           if (tables_finished) {
-            console.log(params);
             lookup[this.panel](params);
           }
         };
@@ -520,7 +583,6 @@ export default {
             params
           );
           this.apiResponse = result;
-          console.log(this.apiResponse.preview);
           this.apiStatus = 200;
         } catch (e) {
           this.apiError = e;
