@@ -278,7 +278,7 @@
             <v-btn
               color="success"
               :href="generateDownload('output.zip')"
-              download
+              download="output.zip"
               >Download Full Zip</v-btn
             >
           </v-col>
@@ -286,7 +286,7 @@
             <v-btn
               color="success"
               :href="generateDownload('output.xlsx')"
-              download
+              download="output.xlsx"
               >Download xlsx</v-btn
             >
           </v-col>
@@ -294,7 +294,7 @@
             <v-btn
               color="success"
               :href="generateDownload('fields.csv')"
-              download
+              download="fields.csv"
               >Download fields.csv</v-btn
             >
           </v-col>
@@ -302,7 +302,7 @@
             <v-btn
               color="success"
               :href="generateDownload('tables.csv')"
-              download
+              download="tables.csv"
               >Download tables.csv</v-btn
             >
           </v-col>
@@ -310,7 +310,7 @@
             <v-btn
               color="success"
               :href="generateDownload('datapackage.json')"
-              download
+              download="datapackage.json"
               >Download datapackage.json</v-btn
             >
           </v-col>
