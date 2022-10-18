@@ -27,9 +27,10 @@
         >
         <br />
         <br />
-        <strong
-          >No data uploaded is sent to external service. All processing is in the browser only.</strong
-        >
+        <strong>
+          No data uploaded is sent to external service. All processing is in the
+          browser only.
+        </strong>
       </v-card-text>
     </v-card>
   </v-container>

@@ -262,6 +262,15 @@
       </v-container>
     </v-card>
 
+    <v-card class="mt-4" v-if="apiResponse && linkURL" id="download">
+      <v-card-title id="tables-preview" v-intersect="onIntersect"
+        >Share link</v-card-title
+      >
+      <v-card-text>
+        <a :href="linkURL">{{ linkURL }}</a>
+      </v-card-text>
+    </v-card>
+
     <v-card class="mt-4" v-if="apiResponse" id="download">
       <v-container>
         <v-row>
@@ -311,12 +320,24 @@
   </v-container>
 </template>
 <script>
+let string_params = [
+  "main_table_name",
+  "table_prefix",
+  "path_separator",
+  "array_key",
+  "json_schema",
+  "pushdown",
+];
+
+let bool_params = ["inline_one_to_one", "fields_only", "tables_only"];
+
 function defaultData(from_url) {
   let data = {
     panel: 0,
     fileUpload: null,
     url: "",
     paste: "",
+    linkURL: "",
     useTitle: ["No Title", "Full Title", "Slug", "Underscore Slug"],
     arrayPosition: "top",
     array_key: "",
@@ -356,25 +377,12 @@ function defaultData(from_url) {
       data["url"] = url;
     }
 
-    let string_params = [
-      "main_table_name",
-      "table_prefix",
-      "path_separator",
-      "array_key",
-      "json_schema",
-      "fields_only",
-      "tables_only",
-      "pushdown",
-    ];
     for (const element of string_params) {
       let value = search.get(element);
-      console.log(element);
       if (value) {
         data[element] = value;
       }
     }
-
-    let bool_params = ["inline_one_to_one", "fields_only", "tables_only"];
 
     for (const element of bool_params) {
       let value = search.get(element);
@@ -401,8 +409,6 @@ export default {
     let run = async () => {
       await window.wasm_bindgen("/js/flatterer_lite_bg.wasm");
       window.wasm_bindgen.set_logger();
-      //const result = await wasm_bindgen.get_url("https://raw.githubusercontent.com/openreferral/specification/master/datapackage.json", {"moo": "doo"});
-      //console.log(result);
       if (this.url) {
         this.preview();
       }
@@ -564,6 +570,45 @@ export default {
           }
         };
         tables_reader.readAsText(this.tablesUpload);
+      }
+
+      let original_data = defaultData();
+
+      let newParams = {};
+
+      for (const element of string_params) {
+        if (this[element] != original_data[element]) {
+          newParams[element] = this[element];
+        }
+      }
+      for (const element of bool_params) {
+        if (this[element] != original_data[element]) {
+          newParams[element] = "true";
+        }
+      }
+      if (this.arrayPosition == "stream") {
+        newParams.stream = "true";
+        newParams.array_key = "";
+      }
+      if (this.arrayPosition == "top") {
+        newParams.array_key = "";
+      }
+
+      if (this.panel == 1 && this.url) {
+        newParams.url = this.url;
+      }
+
+      this.linkURL = "";
+      if (
+        this.panel == 1 &&
+        this.url &&
+        !this.fieldsUpload &&
+        !this.tablesUpload
+      ) {
+        this.linkURL =
+          window.location.origin +
+          "?" +
+          new URLSearchParams(newParams).toString();
       }
     },
     cleanStatus() {

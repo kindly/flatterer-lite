@@ -157,7 +157,9 @@ fn get_options(js_options: JsValue) -> Result<Options, JsValue> {
 
     let path: String = value["array_key"].as_str().unwrap_or("").into();
     if !path.is_empty() && !options.json_stream {
-        path_vec.push(path);
+        for item in path.split(',') {
+            path_vec.push(item.to_owned());
+        }
     }
     options.path = path_vec;
 
