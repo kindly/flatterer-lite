@@ -9,7 +9,7 @@
         <br />
         Here is
         <a
-          href="http://localhost:8080?main_table_name=prizes&array_key=prizes&url=https%3A%2F%2Fapi.nobelprize.org%2Fv1%2Fprize.json"
+          href="http://lite.flatterer.dev?main_table_name=prizes&array_key=prizes&url=https%3A%2F%2Fapi.nobelprize.org%2Fv1%2Fprize.json"
         >
           an example converting the noble prize winners JSON API </a
         >.If you need more flexibility try
