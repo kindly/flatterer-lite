@@ -1,5 +1,40 @@
 <template>
   <v-container>
+    <v-card class="mb-5">
+      <v-card-text>
+        <strong>
+          Convert JSON into tablular data. Most common JSON structures work so
+          give it a try!
+        </strong>
+        <br />
+        Here is
+        <a
+          href="http://localhost:8080?main_table_name=prizes&array_key=prizes&url=https%3A%2F%2Fapi.nobelprize.org%2Fv1%2Fprize.json"
+        >
+          an example converting the noble prize winners JSON API </a
+        >.If you need more flexibility try
+        <a href="https://github.com/kindly/flatterer">the python libary/cli.</a>
+        <br />
+        <br />
+        <strong>Why flatterer over other JSON to CSV converters?</strong>
+        <ul>
+          <li>
+            One-to-Many relationships are delt with by creating multiple tables
+            instead of a single wide table with lots of headers. This makes
+            analyzing deeply nested JSON structures easier.
+          </li>
+          <li>
+            The conversions are done in locally in the browser, so the data is
+            not sent to a server.
+          </li>
+          <li>
+            Fast and can deal with data ~1GB or more of JSON if you have enough
+            RAM.
+          </li>
+          <li>Lots of options including an XLXS Converter.</li>
+        </ul>
+      </v-card-text>
+    </v-card>
     <v-card>
       <v-row>
         <v-col>
@@ -149,7 +184,7 @@
                   label="Pushdown"
                   v-model="pushdown"
                   placeholder="id"
-                  messages="Field to pushdown to seperate tables"
+                  messages="Field to pushdown to child tables"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -276,6 +311,7 @@
         <v-row>
           <v-col>
             <v-btn
+              id="output_zip"
               color="success"
               :href="generateDownload('output.zip')"
               download="output.zip"
@@ -284,6 +320,7 @@
           </v-col>
           <v-col v-if="apiResponse.files['output.xlsx']">
             <v-btn
+              id="output_xlsx"
               color="success"
               :href="generateDownload('output.xlsx')"
               download="output.xlsx"
@@ -292,6 +329,7 @@
           </v-col>
           <v-col>
             <v-btn
+              id="fields_csv"
               color="success"
               :href="generateDownload('fields.csv')"
               download="fields.csv"
@@ -300,6 +338,7 @@
           </v-col>
           <v-col>
             <v-btn
+              id="tables_csv"
               color="success"
               :href="generateDownload('tables.csv')"
               download="tables.csv"
@@ -308,6 +347,7 @@
           </v-col>
           <v-col>
             <v-btn
+              id="datapackage_json"
               color="success"
               :href="generateDownload('datapackage.json')"
               download="datapackage.json"
@@ -414,6 +454,16 @@ export default {
       }
     };
     run();
+  },
+  updated() {
+    if (this.apiResponse) {
+      let search = new URLSearchParams(new URL(window.location.href).search);
+      let download = search.get("download");
+      if (download) {
+        let element = document.getElementById(download);
+        element.click();
+      }
+    }
   },
   watch: {
     apiError(newError) {
@@ -539,7 +589,6 @@ export default {
         1: this.downloadURL,
         2: this.submitPaste,
       };
-      lookup[this.panel](params);
 
       let fields_finished = !this.fieldsUpload;
       let tables_finished = !this.tablesUpload;
@@ -588,10 +637,10 @@ export default {
       }
       if (this.arrayPosition == "stream") {
         newParams.stream = "true";
-        newParams.array_key = "";
+        delete newParams.array_key;
       }
       if (this.arrayPosition == "top") {
-        newParams.array_key = "";
+        delete newParams.array_key;
       }
 
       if (this.panel == 1 && this.url) {
@@ -623,8 +672,8 @@ export default {
       let reader = new FileReader();
       reader.onload = async (evt) => {
         try {
-          const result = await window.wasm_bindgen.from_string(
-            evt.target.result,
+          const result = await window.wasm_bindgen.from_bytes(
+            new Uint8Array(evt.target.result),
             params
           );
           this.apiResponse = result;
@@ -634,7 +683,7 @@ export default {
           this.apiStatus = 400;
         }
       };
-      reader.readAsText(this.fileUpload);
+      reader.readAsArrayBuffer(this.fileUpload);
     },
     async downloadURL(params) {
       this.cleanStatus();

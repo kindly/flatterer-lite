@@ -63,7 +63,9 @@ fn preview_output(
             }
         }
 
-        let mut reader = Reader::from_reader(flat_files.csv_memory.get(&format!("{}.csv", table_title)).unwrap().as_slice());
+        let reader = flate2::read::GzDecoder::new(flat_files.csv_memory_gz.get(&format!("{}.csv", table_title)).unwrap().as_slice());
+
+        let mut reader = Reader::from_reader(reader);
 
         for (row_num, row) in reader.deserialize().enumerate() {
             let row: Vec<String> = row.expect("files trusted");
@@ -97,11 +99,14 @@ fn zip_output(flatfile: &mut  FlatFiles) -> () {
             options,
         ).unwrap();
 
-        for (key, value) in flatfile.csv_memory.drain(..) {
+        for (key, value) in flatfile.csv_memory_gz.drain(..) {
             zip.start_file(
                 format!("csv/{key}"), options
             ).unwrap();
-            std::io::copy(&mut value.as_slice(), &mut zip).unwrap();
+
+            let mut reader = flate2::read::GzDecoder::new(value.as_slice());
+
+            std::io::copy(&mut reader, &mut zip).unwrap();
         }
 
         for (key, value) in flatfile.files_memory.iter() {
@@ -194,15 +199,21 @@ pub async fn get_url(url: String, options: JsValue) -> Result<JsValue, JsValue> 
     return from_string(content, options).await
 }
 
-
 #[wasm_bindgen]
 pub async fn from_string(content: String, options: JsValue) -> Result<JsValue, JsValue> {
+
+    return from_bytes(content.as_bytes(), options).await;
+
+}
+
+#[wasm_bindgen]
+pub async fn from_bytes(content: &[u8], options: JsValue) -> Result<JsValue, JsValue> {
 
     log::info!("recieved JSON from javascript");
 
     let options = get_options(options)?;
 
-    let flatfiles_result = flatten_to_memory(BufReader::new(content.as_bytes()), options);
+    let flatfiles_result = flatten_to_memory(BufReader::new(content), options);
 
     log::info!("flatterer finished");
 
@@ -220,7 +231,7 @@ pub async fn from_string(content: String, options: JsValue) -> Result<JsValue, J
     log::info!("zipped files");
 
     let mut files = HashMap::new();
-    for (key, value) in flatfiles.files_memory {
+    for (key, value) in flatfiles.files_memory.drain(..) {
         files.insert(key, Efficient {bytes: value});
     }
 
@@ -228,7 +239,10 @@ pub async fn from_string(content: String, options: JsValue) -> Result<JsValue, J
 
     let serializer = serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true);
 
+
     let output = flatterer_return.serialize(&serializer)?;
+
+
     log::info!("serialized JSON");
 
     Ok(output)

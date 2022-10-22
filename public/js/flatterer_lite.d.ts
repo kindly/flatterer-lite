@@ -16,6 +16,12 @@ declare namespace wasm_bindgen {
 	* @returns {Promise<any>}
 	*/
 	export function from_string(content: string, options: any): Promise<any>;
+	/**
+	* @param {Uint8Array} content
+	* @param {any} options
+	* @returns {Promise<any>}
+	*/
+	export function from_bytes(content: Uint8Array, options: any): Promise<any>;
 	
 }
 
@@ -26,6 +32,7 @@ declare interface InitOutput {
   readonly set_logger: () => void;
   readonly get_url: (a: number, b: number, c: number) => number;
   readonly from_string: (a: number, b: number, c: number) => number;
+  readonly from_bytes: (a: number, b: number, c: number) => number;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_export_2: WebAssembly.Table;
