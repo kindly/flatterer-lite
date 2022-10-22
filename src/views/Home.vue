@@ -3,8 +3,8 @@
     <v-card class="mb-5">
       <v-card-text>
         <strong>
-          Convert JSON into tablular data. Most common JSON structures work so
-          give it a try!
+          Convert JSON into tablular data. Most common JSON structures will
+          work, so give it a try!
         </strong>
         <br />
         Here is
